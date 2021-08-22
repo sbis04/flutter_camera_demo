@@ -4,6 +4,8 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_camera_demo/main.dart';
+import 'package:flutter_camera_demo/screens/preview_screen.dart';
+import 'package:path_provider/path_provider.dart';
 
 class CameraScreen extends StatefulWidget {
   @override
@@ -30,9 +32,34 @@ class _CameraScreenState extends State<CameraScreen>
   double _currentExposureOffset = 0.0;
   late FlashMode _currentFlashMode;
 
+  List<File> imageFileList = [];
+
   final resolutionPresets = ResolutionPreset.values;
 
   ResolutionPreset currentResolutionPreset = ResolutionPreset.high;
+
+  refreshAlreadyCapturedImages() async {
+    final directory = await getApplicationDocumentsDirectory();
+    List<FileSystemEntity> fileList = await directory.list().toList();
+    imageFileList.clear();
+    List<int> fileNames = [];
+
+    fileList.forEach((file) {
+      if (file.path.contains('.jpeg')) {
+        imageFileList.add(File(file.path));
+
+        String name = file.path.split('/').last.split('.').first;
+        fileNames.add(int.parse(name));
+      }
+    });
+
+    int maxFileName =
+        fileNames.reduce((curr, next) => curr > next ? curr : next);
+
+    _imageFile = File('${directory.path}/$maxFileName.jpeg');
+
+    setState(() {});
+  }
 
   Future<XFile?> takePicture() async {
     final CameraController? cameraController = controller;
@@ -122,6 +149,7 @@ class _CameraScreenState extends State<CameraScreen>
     SystemChrome.setEnabledSystemUIOverlays([]);
     // Set and initialize the new camera
     onNewCameraSelected(cameras[0]);
+    refreshAlreadyCapturedImages();
     super.initState();
   }
 
@@ -150,6 +178,7 @@ class _CameraScreenState extends State<CameraScreen>
   @override
   Widget build(BuildContext context) {
     // print(controller!.value.aspectRatio);
+    print(_imageFile?.path ?? '');
     return Scaffold(
       backgroundColor: Colors.black,
       body: _isCameraInitialized
@@ -320,9 +349,19 @@ class _CameraScreenState extends State<CameraScreen>
                                 InkWell(
                                   onTap: () async {
                                     XFile? rawImage = await takePicture();
-                                    setState(() {
-                                      _imageFile = File(rawImage!.path);
-                                    });
+                                    File imageFile = File(rawImage!.path);
+
+                                    int currentUnix =
+                                        DateTime.now().millisecondsSinceEpoch;
+
+                                    final directory =
+                                        await getApplicationDocumentsDirectory();
+
+                                    final File newImage = await imageFile.copy(
+                                      '${directory.path}/$currentUnix.jpeg',
+                                    );
+
+                                    refreshAlreadyCapturedImages();
                                   },
                                   child: Stack(
                                     alignment: Alignment.center,
@@ -344,8 +383,20 @@ class _CameraScreenState extends State<CameraScreen>
                                     ],
                                   ),
                                 ),
-                                // Image.file(File(imageFile!.path))
                                 InkWell(
+                                  onTap: _imageFile != null
+                                      ? () {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  PreviewScreen(
+                                                imageFile: _imageFile!,
+                                                imageFileList: imageFileList,
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      : null,
                                   child: Container(
                                     width: 60,
                                     height: 60,
