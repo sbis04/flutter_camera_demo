@@ -939,13 +939,13 @@ class CameraApp extends StatelessWidget {
 
 List<CameraDescription> cameras = [];
 
-// Future<void> main() async {
-//   // Fetch the available cameras before initializing the app.
-//   try {
-//     WidgetsFlutterBinding.ensureInitialized();
-//     cameras = await availableCameras();
-//   } on CameraException catch (e) {
-//     logError(e.code, e.description);
-//   }
-//   runApp(CameraApp());
-// }
+Future<void> main() async {
+  // Fetch the available cameras before initializing the app.
+  try {
+    WidgetsFlutterBinding.ensureInitialized();
+    cameras = await availableCameras();
+  } on CameraException catch (e) {
+    logError(e.code, e.description);
+  }
+  runApp(CameraApp());
+}
