@@ -1,5 +1,6 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_camera_demo/main.dart';
 
 class CameraScreen extends StatefulWidget {
@@ -17,7 +18,7 @@ class _CameraScreenState extends State<CameraScreen>
 
     final CameraController cameraController = CameraController(
       cameraDescription,
-      ResolutionPreset.ultraHigh,
+      ResolutionPreset.high,
       imageFormatGroup: ImageFormatGroup.jpeg,
     );
 
@@ -49,6 +50,9 @@ class _CameraScreenState extends State<CameraScreen>
 
   @override
   void initState() {
+    // Hide the status bar in Android
+    SystemChrome.setEnabledSystemUIOverlays([]);
+    // Set and initialize the new camera
     onNewCameraSelected(cameras[0]);
     super.initState();
   }
@@ -72,6 +76,7 @@ class _CameraScreenState extends State<CameraScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       body: _isCameraInitialized
           ? AspectRatio(
               aspectRatio: 1 / controller!.value.aspectRatio,
