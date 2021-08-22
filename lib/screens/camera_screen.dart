@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,6 +14,8 @@ class _CameraScreenState extends State<CameraScreen>
     with WidgetsBindingObserver {
   CameraController? controller;
 
+  File? _imageFile;
+
   // Initial values
   bool _isCameraInitialized = false;
   bool _isRearCameraSelected = true;
@@ -24,11 +28,28 @@ class _CameraScreenState extends State<CameraScreen>
   // Current values
   double _currentZoomLevel = 1.0;
   double _currentExposureOffset = 0.0;
-  FlashMode _currentFlashMode = FlashMode.off;
+  late FlashMode _currentFlashMode;
 
   final resolutionPresets = ResolutionPreset.values;
 
   ResolutionPreset currentResolutionPreset = ResolutionPreset.high;
+
+  Future<XFile?> takePicture() async {
+    final CameraController? cameraController = controller;
+
+    if (cameraController!.value.isTakingPicture) {
+      // A capture is already pending, do nothing.
+      return null;
+    }
+
+    try {
+      XFile file = await cameraController.takePicture();
+      return file;
+    } on CameraException catch (e) {
+      print('Error occured while taking picture: $e');
+      return null;
+    }
+  }
 
   void resetCameraValues() async {
     _currentZoomLevel = 1.0;
@@ -75,6 +96,8 @@ class _CameraScreenState extends State<CameraScreen>
             .getMinZoomLevel()
             .then((value) => _minAvailableZoom = value),
       ]);
+
+      _currentFlashMode = controller!.value.flashMode;
 
       print('getMinExposureOffset: $_minAvailableExposureOffset');
       print('getMaxExposureOffset: $_maxAvailableExposureOffset');
@@ -295,6 +318,12 @@ class _CameraScreenState extends State<CameraScreen>
                                   ),
                                 ),
                                 InkWell(
+                                  onTap: () async {
+                                    XFile? rawImage = await takePicture();
+                                    setState(() {
+                                      _imageFile = File(rawImage!.path);
+                                    });
+                                  },
                                   child: Stack(
                                     alignment: Alignment.center,
                                     children: [
@@ -315,6 +344,7 @@ class _CameraScreenState extends State<CameraScreen>
                                     ],
                                   ),
                                 ),
+                                // Image.file(File(imageFile!.path))
                                 InkWell(
                                   child: Container(
                                     width: 60,
@@ -326,6 +356,12 @@ class _CameraScreenState extends State<CameraScreen>
                                         color: Colors.white,
                                         width: 2,
                                       ),
+                                      image: _imageFile != null
+                                          ? DecorationImage(
+                                              image: FileImage(_imageFile!),
+                                              fit: BoxFit.cover,
+                                            )
+                                          : null,
                                     ),
                                   ),
                                 ),
