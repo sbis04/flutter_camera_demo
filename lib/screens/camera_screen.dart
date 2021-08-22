@@ -85,61 +85,130 @@ class _CameraScreenState extends State<CameraScreen>
 
   @override
   Widget build(BuildContext context) {
+    // print(controller!.value.aspectRatio);
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          _isCameraInitialized
-              ? AspectRatio(
-                  aspectRatio: 1 / controller!.value.aspectRatio,
-                  child: controller!.buildPreview(),
-                )
-              : Center(
-                  child: Text(
-                    'LOADING',
-                    style: TextStyle(color: Colors.white),
+      body: _isCameraInitialized
+          ? AspectRatio(
+              aspectRatio: 1 / controller!.value.aspectRatio,
+              // aspectRatio: 1 / 1.7777777777777777,
+              child: Stack(
+                children: [
+                  controller!.buildPreview(),
+                  Container(
+                    color: Colors.white10,
                   ),
-                ),
-          Align(
-            alignment: Alignment.topRight,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.black38,
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 8.0, right: 8.0),
-                  child: DropdownButton<ResolutionPreset>(
-                    dropdownColor: Colors.black87,
-                    underline: Container(),
-                    value: currentResolutionPreset,
-                    items: [
-                      for (ResolutionPreset preset in resolutionPresets)
-                        DropdownMenuItem(
-                          child: Text(
-                            preset.toString().split('.')[1].toUpperCase(),
-                            style: TextStyle(color: Colors.white),
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black38,
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+                          child: DropdownButton<ResolutionPreset>(
+                            dropdownColor: Colors.black87,
+                            underline: Container(),
+                            value: currentResolutionPreset,
+                            items: [
+                              for (ResolutionPreset preset in resolutionPresets)
+                                DropdownMenuItem(
+                                  child: Text(
+                                    preset
+                                        .toString()
+                                        .split('.')[1]
+                                        .toUpperCase(),
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  value: preset,
+                                )
+                            ],
+                            onChanged: (value) {
+                              setState(() {
+                                currentResolutionPreset = value!;
+                                _isCameraInitialized = false;
+                              });
+                              onNewCameraSelected(controller!.description);
+                            },
+                            hint: Text("Select item"),
                           ),
-                          value: preset,
-                        )
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        currentResolutionPreset = value!;
-                        _isCameraInitialized = false;
-                      });
-                      onNewCameraSelected(controller!.description);
-                    },
-                    hint: Text("Select item"),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          InkWell(
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Icon(
+                                  Icons.circle,
+                                  color: Colors.black38,
+                                  size: 60,
+                                ),
+                                Icon(
+                                  Icons.camera_rear,
+                                  // Icons.camera_front,
+                                  color: Colors.white,
+                                  size: 30,
+                                ),
+                              ],
+                            ),
+                          ),
+                          InkWell(
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Icon(
+                                  Icons.circle,
+                                  color: Colors.white38,
+                                  size: 80,
+                                ),
+                                Icon(
+                                  Icons.circle,
+                                  // Icons.camera_rear,
+                                  color: Colors.white,
+                                  size: 60,
+                                ),
+                              ],
+                            ),
+                          ),
+                          InkWell(
+                            child: Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(10.0),
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            )
+          : Center(
+              child: Text(
+                'LOADING',
+                style: TextStyle(color: Colors.white),
               ),
             ),
-          ),
-        ],
-      ),
     );
   }
 }
