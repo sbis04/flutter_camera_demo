@@ -24,10 +24,12 @@ class _CameraScreenState extends State<CameraScreen>
       imageFormatGroup: ImageFormatGroup.jpeg,
     );
 
-    controller = cameraController;
+    await previousCameraController?.dispose();
 
     if (mounted) {
-      setState(() {});
+      setState(() {
+        controller = cameraController;
+      });
     }
 
     // Update UI if controller updated
@@ -47,7 +49,7 @@ class _CameraScreenState extends State<CameraScreen>
       });
     }
 
-    await previousCameraController?.dispose();
+    setState(() {});
   }
 
   @override
@@ -76,6 +78,12 @@ class _CameraScreenState extends State<CameraScreen>
   }
 
   @override
+  void dispose() {
+    controller?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
@@ -86,7 +94,12 @@ class _CameraScreenState extends State<CameraScreen>
                   aspectRatio: 1 / controller!.value.aspectRatio,
                   child: controller!.buildPreview(),
                 )
-              : Container(),
+              : Center(
+                  child: Text(
+                    'LOADING',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
           Align(
             alignment: Alignment.topRight,
             child: Padding(
@@ -115,7 +128,9 @@ class _CameraScreenState extends State<CameraScreen>
                     onChanged: (value) {
                       setState(() {
                         currentResolutionPreset = value!;
+                        _isCameraInitialized = false;
                       });
+                      onNewCameraSelected(controller!.description);
                     },
                     hint: Text("Select item"),
                   ),
