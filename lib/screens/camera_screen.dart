@@ -11,18 +11,27 @@ class CameraScreen extends StatefulWidget {
 class _CameraScreenState extends State<CameraScreen>
     with WidgetsBindingObserver {
   CameraController? controller;
+
+  // Initial values
   bool _isCameraInitialized = false;
+  bool _isRearCameraSelected = true;
   double _minAvailableExposureOffset = 0.0;
   double _maxAvailableExposureOffset = 0.0;
   double _minAvailableZoom = 1.0;
   double _maxAvailableZoom = 1.0;
 
+  // Current values
   double _currentZoomLevel = 1.0;
   double _currentExposureOffset = 0.0;
 
   final resolutionPresets = ResolutionPreset.values;
 
   ResolutionPreset currentResolutionPreset = ResolutionPreset.high;
+
+  void resetCameraValues() async {
+    _currentZoomLevel = 1.0;
+    _currentExposureOffset = 0.0;
+  }
 
   void onNewCameraSelected(CameraDescription cameraDescription) async {
     final previousCameraController = controller;
@@ -34,6 +43,8 @@ class _CameraScreenState extends State<CameraScreen>
     );
 
     await previousCameraController?.dispose();
+
+    resetCameraValues();
 
     if (mounted) {
       setState(() {
@@ -123,153 +134,295 @@ class _CameraScreenState extends State<CameraScreen>
               child: Stack(
                 children: [
                   controller!.buildPreview(),
-                  Container(
-                    color: Colors.white10,
-                  ),
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black87,
-                          borderRadius: BorderRadius.circular(10.0),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Align(
+                          alignment: Alignment.topRight,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.black87,
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.only(left: 8.0, right: 8.0),
+                              child: DropdownButton<ResolutionPreset>(
+                                dropdownColor: Colors.black87,
+                                underline: Container(),
+                                value: currentResolutionPreset,
+                                items: [
+                                  for (ResolutionPreset preset
+                                      in resolutionPresets)
+                                    DropdownMenuItem(
+                                      child: Text(
+                                        preset
+                                            .toString()
+                                            .split('.')[1]
+                                            .toUpperCase(),
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      value: preset,
+                                    )
+                                ],
+                                onChanged: (value) {
+                                  setState(() {
+                                    currentResolutionPreset = value!;
+                                    _isCameraInitialized = false;
+                                  });
+                                  onNewCameraSelected(controller!.description);
+                                },
+                                hint: Text("Select item"),
+                              ),
+                            ),
+                          ),
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 8.0, right: 8.0),
-                          child: DropdownButton<ResolutionPreset>(
-                            dropdownColor: Colors.black87,
-                            underline: Container(),
-                            value: currentResolutionPreset,
-                            items: [
-                              for (ResolutionPreset preset in resolutionPresets)
-                                DropdownMenuItem(
+                        // Spacer(),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8.0, top: 16.0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                _currentExposureOffset.toStringAsFixed(1) + 'x',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: RotatedBox(
+                            quarterTurns: 3,
+                            child: Container(
+                              height: 30,
+                              child: Slider(
+                                value: _currentExposureOffset,
+                                min: _minAvailableExposureOffset,
+                                max: _maxAvailableExposureOffset,
+                                activeColor: Colors.white,
+                                inactiveColor: Colors.white30,
+                                onChanged: (value) async {
+                                  setState(() {
+                                    _currentExposureOffset = value;
+                                  });
+                                  await controller!.setExposureOffset(value);
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Slider(
+                                value: _currentZoomLevel,
+                                min: _minAvailableZoom,
+                                max: _maxAvailableZoom,
+                                activeColor: Colors.white,
+                                inactiveColor: Colors.white30,
+                                onChanged: (value) async {
+                                  setState(() {
+                                    _currentZoomLevel = value;
+                                  });
+                                  await controller!.setZoomLevel(value);
+                                },
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.black87,
+                                  borderRadius: BorderRadius.circular(10.0),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
                                   child: Text(
-                                    preset
-                                        .toString()
-                                        .split('.')[1]
-                                        .toUpperCase(),
+                                    _currentZoomLevel.toStringAsFixed(1) + 'x',
                                     style: TextStyle(color: Colors.white),
                                   ),
-                                  value: preset,
-                                )
-                            ],
-                            onChanged: (value) {
-                              setState(() {
-                                currentResolutionPreset = value!;
-                                _isCameraInitialized = false;
-                              });
-                              onNewCameraSelected(controller!.description);
-                            },
-                            hint: Text("Select item"),
-                          ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _isRearCameraSelected =
+                                      !_isRearCameraSelected;
+                                  _isCameraInitialized = false;
+                                });
+                                onNewCameraSelected(
+                                    cameras[_isRearCameraSelected ? 0 : 1]);
+                              },
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.circle,
+                                    color: Colors.black38,
+                                    size: 60,
+                                  ),
+                                  Icon(
+                                    _isRearCameraSelected
+                                        ? Icons.camera_rear
+                                        : Icons.camera_front,
+                                    color: Colors.white,
+                                    size: 30,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            InkWell(
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.circle,
+                                    color: Colors.white38,
+                                    size: 80,
+                                  ),
+                                  Icon(
+                                    Icons.circle,
+                                    // Icons.camera_rear,
+                                    color: Colors.white,
+                                    size: 60,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            InkWell(
+                              child: Container(
+                                width: 60,
+                                height: 60,
+                                decoration: BoxDecoration(
+                                  color: Colors.black,
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Slider(
-                                  value: _currentZoomLevel,
-                                  min: _minAvailableZoom,
-                                  max: _maxAvailableZoom,
-                                  label: _currentZoomLevel.toString(),
-                                  activeColor: Colors.white,
-                                  inactiveColor: Colors.white30,
-                                  onChanged: (value) async {
-                                    setState(() {
-                                      _currentZoomLevel = value;
-                                    });
-                                    await controller!.setZoomLevel(value);
-                                  },
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.black87,
-                                    borderRadius: BorderRadius.circular(10.0),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      _currentZoomLevel.toStringAsFixed(1) +
-                                          'x',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              InkWell(
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.circle,
-                                      color: Colors.black38,
-                                      size: 60,
-                                    ),
-                                    Icon(
-                                      Icons.camera_rear,
-                                      // Icons.camera_front,
-                                      color: Colors.white,
-                                      size: 30,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              InkWell(
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.circle,
-                                      color: Colors.white38,
-                                      size: 80,
-                                    ),
-                                    Icon(
-                                      Icons.circle,
-                                      // Icons.camera_rear,
-                                      color: Colors.white,
-                                      size: 60,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              InkWell(
-                                child: Container(
-                                  width: 60,
-                                  height: 60,
-                                  decoration: BoxDecoration(
-                                    color: Colors.black,
-                                    borderRadius: BorderRadius.circular(10.0),
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: 2,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
+                  // Align(
+                  //   alignment: Alignment.bottomCenter,
+                  //   child: Padding(
+                  //     padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
+                  //     child: Column(
+                  //       mainAxisSize: MainAxisSize.min,
+                  //       children: [
+                  //         Row(
+                  //           children: [
+                  //             Expanded(
+                  //               child: Slider(
+                  //                 value: _currentZoomLevel,
+                  //                 min: _minAvailableZoom,
+                  //                 max: _maxAvailableZoom,
+                  //                 label: _currentZoomLevel.toString(),
+                  //                 activeColor: Colors.white,
+                  //                 inactiveColor: Colors.white30,
+                  //                 onChanged: (value) async {
+                  //                   setState(() {
+                  //                     _currentZoomLevel = value;
+                  //                   });
+                  //                   await controller!.setZoomLevel(value);
+                  //                 },
+                  //               ),
+                  //             ),
+                  //             Padding(
+                  //               padding: const EdgeInsets.only(right: 8.0),
+                  //               child: Container(
+                  //                 decoration: BoxDecoration(
+                  //                   color: Colors.black87,
+                  //                   borderRadius: BorderRadius.circular(10.0),
+                  //                 ),
+                  //                 child: Padding(
+                  //                   padding: const EdgeInsets.all(8.0),
+                  //                   child: Text(
+                  //                     _currentZoomLevel.toStringAsFixed(1) +
+                  //                         'x',
+                  //                     style: TextStyle(color: Colors.white),
+                  //                   ),
+                  //                 ),
+                  //               ),
+                  //             ),
+                  //           ],
+                  //         ),
+                  //         Row(
+                  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //           children: [
+                  //             InkWell(
+                  //               child: Stack(
+                  //                 alignment: Alignment.center,
+                  //                 children: [
+                  //                   Icon(
+                  //                     Icons.circle,
+                  //                     color: Colors.black38,
+                  //                     size: 60,
+                  //                   ),
+                  //                   Icon(
+                  //                     Icons.camera_rear,
+                  //                     // Icons.camera_front,
+                  //                     color: Colors.white,
+                  //                     size: 30,
+                  //                   ),
+                  //                 ],
+                  //               ),
+                  //             ),
+                  //             InkWell(
+                  //               child: Stack(
+                  //                 alignment: Alignment.center,
+                  //                 children: [
+                  //                   Icon(
+                  //                     Icons.circle,
+                  //                     color: Colors.white38,
+                  //                     size: 80,
+                  //                   ),
+                  //                   Icon(
+                  //                     Icons.circle,
+                  //                     // Icons.camera_rear,
+                  //                     color: Colors.white,
+                  //                     size: 60,
+                  //                   ),
+                  //                 ],
+                  //               ),
+                  //             ),
+                  //             InkWell(
+                  //               child: Container(
+                  //                 width: 60,
+                  //                 height: 60,
+                  //                 decoration: BoxDecoration(
+                  //                   color: Colors.black,
+                  //                   borderRadius: BorderRadius.circular(10.0),
+                  //                   border: Border.all(
+                  //                     color: Colors.white,
+                  //                     width: 2,
+                  //                   ),
+                  //                 ),
+                  //               ),
+                  //             ),
+                  //           ],
+                  //         ),
+                  //       ],
+                  //     ),
+                  //   ),
+                  // )
                 ],
               ),
             )
