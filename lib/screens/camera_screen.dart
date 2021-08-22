@@ -24,6 +24,7 @@ class _CameraScreenState extends State<CameraScreen>
   // Current values
   double _currentZoomLevel = 1.0;
   double _currentExposureOffset = 0.0;
+  FlashMode _currentFlashMode = FlashMode.off;
 
   final resolutionPresets = ResolutionPreset.values;
 
@@ -336,55 +337,142 @@ class _CameraScreenState extends State<CameraScreen>
                     ],
                   ),
                 ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 8.0, right: 4.0),
-                        child: TextButton(
-                          onPressed: () {
-                            if (_isVideoCameraSelected) {
-                              setState(() {
-                                _isVideoCameraSelected = false;
-                              });
-                            }
-                          },
-                          style: TextButton.styleFrom(
-                            primary: _isVideoCameraSelected
-                                ? Colors.black54
-                                : Colors.black,
-                            backgroundColor: _isVideoCameraSelected
-                                ? Colors.white30
-                                : Colors.white,
+                Expanded(
+                  child: SingleChildScrollView(
+                    physics: BouncingScrollPhysics(),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 8.0, right: 4.0),
+                                  child: TextButton(
+                                    onPressed: () {
+                                      if (_isVideoCameraSelected) {
+                                        setState(() {
+                                          _isVideoCameraSelected = false;
+                                        });
+                                      }
+                                    },
+                                    style: TextButton.styleFrom(
+                                      primary: _isVideoCameraSelected
+                                          ? Colors.black54
+                                          : Colors.black,
+                                      backgroundColor: _isVideoCameraSelected
+                                          ? Colors.white30
+                                          : Colors.white,
+                                    ),
+                                    child: Text('IMAGE'),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 4.0, right: 8.0),
+                                  child: TextButton(
+                                    onPressed: () {
+                                      if (!_isVideoCameraSelected) {
+                                        setState(() {
+                                          _isVideoCameraSelected = true;
+                                        });
+                                      }
+                                    },
+                                    style: TextButton.styleFrom(
+                                      primary: _isVideoCameraSelected
+                                          ? Colors.black
+                                          : Colors.black54,
+                                      backgroundColor: _isVideoCameraSelected
+                                          ? Colors.white
+                                          : Colors.white30,
+                                    ),
+                                    child: Text('VIDEO'),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          child: Text('IMAGE'),
                         ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 4.0, right: 8.0),
-                        child: TextButton(
-                          onPressed: () {
-                            if (!_isVideoCameraSelected) {
-                              setState(() {
-                                _isVideoCameraSelected = true;
-                              });
-                            }
-                          },
-                          style: TextButton.styleFrom(
-                            primary: _isVideoCameraSelected
-                                ? Colors.black
-                                : Colors.black54,
-                            backgroundColor: _isVideoCameraSelected
-                                ? Colors.white
-                                : Colors.white30,
+                        Padding(
+                          padding:
+                              const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              InkWell(
+                                onTap: () async {
+                                  setState(() {
+                                    _currentFlashMode = FlashMode.off;
+                                  });
+                                  await controller!.setFlashMode(
+                                    FlashMode.off,
+                                  );
+                                },
+                                child: Icon(
+                                  Icons.flash_off,
+                                  color: _currentFlashMode == FlashMode.off
+                                      ? Colors.amber
+                                      : Colors.white,
+                                ),
+                              ),
+                              InkWell(
+                                onTap: () async {
+                                  setState(() {
+                                    _currentFlashMode = FlashMode.auto;
+                                  });
+                                  await controller!.setFlashMode(
+                                    FlashMode.auto,
+                                  );
+                                },
+                                child: Icon(
+                                  Icons.flash_auto,
+                                  color: _currentFlashMode == FlashMode.auto
+                                      ? Colors.amber
+                                      : Colors.white,
+                                ),
+                              ),
+                              InkWell(
+                                onTap: () async {
+                                  setState(() {
+                                    _currentFlashMode = FlashMode.always;
+                                  });
+                                  await controller!.setFlashMode(
+                                    FlashMode.always,
+                                  );
+                                },
+                                child: Icon(
+                                  Icons.flash_on,
+                                  color: _currentFlashMode == FlashMode.always
+                                      ? Colors.amber
+                                      : Colors.white,
+                                ),
+                              ),
+                              InkWell(
+                                onTap: () async {
+                                  setState(() {
+                                    _currentFlashMode = FlashMode.torch;
+                                  });
+                                  await controller!.setFlashMode(
+                                    FlashMode.torch,
+                                  );
+                                },
+                                child: Icon(
+                                  Icons.highlight,
+                                  color: _currentFlashMode == FlashMode.torch
+                                      ? Colors.amber
+                                      : Colors.white,
+                                ),
+                              ),
+                            ],
                           ),
-                          child: Text('VIDEO'),
-                        ),
-                      ),
+                        )
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ],
             )
