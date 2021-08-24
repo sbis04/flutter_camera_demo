@@ -22,13 +22,15 @@ class _CameraScreenState extends State<CameraScreen>
       imageFormatGroup: ImageFormatGroup.jpeg,
     );
 
-    controller = cameraController;
+    await previousCameraController?.dispose();
 
     if (mounted) {
-      setState(() {});
+      setState(() {
+        controller = cameraController;
+      });
     }
 
-    // If the controller is updated then update the UI.
+    // Update UI if controller updated
     cameraController.addListener(() {
       if (mounted) setState(() {});
     });
@@ -44,8 +46,6 @@ class _CameraScreenState extends State<CameraScreen>
         _isCameraInitialized = controller!.value.isInitialized;
       });
     }
-
-    await previousCameraController?.dispose();
   }
 
   @override
