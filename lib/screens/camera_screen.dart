@@ -1,6 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_camera_demo/main.dart';
+
+import '../main.dart';
 
 class CameraScreen extends StatefulWidget {
   @override
