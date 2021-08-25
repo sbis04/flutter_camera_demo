@@ -35,7 +35,7 @@ class _CameraScreenState extends State<CameraScreen>
   // Current values
   double _currentZoomLevel = 1.0;
   double _currentExposureOffset = 0.0;
-  late FlashMode _currentFlashMode;
+  FlashMode? _currentFlashMode;
 
   List<File> imageFileList = [];
 
