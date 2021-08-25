@@ -413,12 +413,14 @@ class _CameraScreenState extends State<CameraScreen>
                                         }
                                       : () {
                                           setState(() {
-                                            _isRearCameraSelected =
-                                                !_isRearCameraSelected;
                                             _isCameraInitialized = false;
                                           });
                                           onNewCameraSelected(cameras[
-                                              _isRearCameraSelected ? 0 : 1]);
+                                              _isRearCameraSelected ? 1 : 0]);
+                                          setState(() {
+                                            _isRearCameraSelected =
+                                                !_isRearCameraSelected;
+                                          });
                                         },
                                   child: Stack(
                                     alignment: Alignment.center,
@@ -442,8 +444,8 @@ class _CameraScreenState extends State<CameraScreen>
                                                 )
                                           : Icon(
                                               _isRearCameraSelected
-                                                  ? Icons.camera_rear
-                                                  : Icons.camera_front,
+                                                  ? Icons.camera_front
+                                                  : Icons.camera_rear,
                                               color: Colors.white,
                                               size: 30,
                                             ),
