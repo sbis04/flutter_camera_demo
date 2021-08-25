@@ -102,7 +102,7 @@ class _CameraScreenState extends State<CameraScreen>
     final CameraController? cameraController = controller;
 
     if (controller!.value.isRecordingVideo) {
-      // A recording is already started, do nothing.
+      // A recording has already started, do nothing.
       return;
     }
 
