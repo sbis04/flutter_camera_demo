@@ -45,7 +45,7 @@ class CapturesScreen extends StatelessWidget {
                         Navigator.of(context).pushReplacement(
                           MaterialPageRoute(
                             builder: (context) => PreviewScreen(
-                              imageFileList: imageFileList,
+                              fileList: imageFileList,
                               imageFile: imageFile,
                             ),
                           ),

@@ -17,7 +17,6 @@ class _CameraScreenState extends State<CameraScreen>
     with WidgetsBindingObserver {
   CameraController? controller;
   VideoPlayerController? videoController;
-  VoidCallback? videoPlayerListener;
 
   File? _imageFile;
   File? _videoFile;
@@ -37,7 +36,7 @@ class _CameraScreenState extends State<CameraScreen>
   double _currentExposureOffset = 0.0;
   FlashMode? _currentFlashMode;
 
-  List<File> imageFileList = [];
+  List<File> allFileList = [];
 
   final resolutionPresets = ResolutionPreset.values;
 
@@ -46,23 +45,30 @@ class _CameraScreenState extends State<CameraScreen>
   refreshAlreadyCapturedImages() async {
     final directory = await getApplicationDocumentsDirectory();
     List<FileSystemEntity> fileList = await directory.list().toList();
-    imageFileList.clear();
-    List<int> fileNames = [];
+    allFileList.clear();
+    List<Map<int, dynamic>> fileNames = [];
 
     fileList.forEach((file) {
-      if (file.path.contains('.jpg')) {
-        imageFileList.add(File(file.path));
+      if (file.path.contains('.jpg') || file.path.contains('.mp4')) {
+        allFileList.add(File(file.path));
 
         String name = file.path.split('/').last.split('.').first;
-        fileNames.add(int.parse(name));
+        fileNames.add({0: int.parse(name), 1: file.path.split('/').last});
       }
     });
 
     if (fileNames.isNotEmpty) {
-      int maxFileName =
-          fileNames.reduce((curr, next) => curr > next ? curr : next);
-
-      _imageFile = File('${directory.path}/$maxFileName.jpg');
+      final recentFile =
+          fileNames.reduce((curr, next) => curr[0] > next[0] ? curr : next);
+      String recentFileName = recentFile[1];
+      if (recentFileName.contains('.mp4')) {
+        _videoFile = File('${directory.path}/$recentFileName');
+        _imageFile = null;
+        _startVideoPlayer();
+      } else {
+        _imageFile = File('${directory.path}/$recentFileName');
+        _videoFile = null;
+      }
 
       setState(() {});
     }
@@ -127,7 +133,6 @@ class _CameraScreenState extends State<CameraScreen>
       XFile file = await controller!.stopVideoRecording();
       setState(() {
         _isRecordingInProgress = false;
-        print(_isRecordingInProgress);
       });
       return file;
     } on CameraException catch (e) {
@@ -529,19 +534,20 @@ class _CameraScreenState extends State<CameraScreen>
                                   ),
                                 ),
                                 InkWell(
-                                  onTap: _imageFile != null
-                                      ? () {
-                                          Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  PreviewScreen(
-                                                imageFile: _imageFile!,
-                                                imageFileList: imageFileList,
-                                              ),
-                                            ),
-                                          );
-                                        }
-                                      : null,
+                                  onTap:
+                                      _imageFile != null || _videoFile != null
+                                          ? () {
+                                              Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      PreviewScreen(
+                                                    imageFile: _imageFile!,
+                                                    fileList: allFileList,
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          : null,
                                   child: Container(
                                     width: 60,
                                     height: 60,
