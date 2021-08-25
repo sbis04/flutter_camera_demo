@@ -10,8 +10,8 @@ The app contains most of the basic camera features, including:
 - Zoom control
 - Exposure control
 - Flash mode selector
-- Button for flipping camera — rear cam to front cam and vice versa
-- Button for capturing image
+- Button for flipping the camera — rear cam to front cam and vice versa
+- Button for capturing an image
 - Toggle for shifting from image mode to video mode
 - Video mode controls — start, pause, resume, stop
 - Last captured image or video preview
