@@ -1,0 +1,34 @@
+PODS:
+  - camera (0.0.1):
+    - Flutter
+  - Flutter (1.0.0)
+  - path_provider (0.0.1):
+    - Flutter
+  - video_player (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - camera (from `.symlinks/plugins/camera/ios`)
+  - Flutter (from `Flutter`)
+  - path_provider (from `.symlinks/plugins/path_provider/ios`)
+  - video_player (from `.symlinks/plugins/video_player/ios`)
+
+EXTERNAL SOURCES:
+  camera:
+    :path: ".symlinks/plugins/camera/ios"
+  Flutter:
+    :path: Flutter
+  path_provider:
+    :path: ".symlinks/plugins/path_provider/ios"
+  video_player:
+    :path: ".symlinks/plugins/video_player/ios"
+
+SPEC CHECKSUMS:
+  camera: b9eb73c055259c6f808a9da4a0d43780f6645281
+  Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
+  path_provider: d1e9807085df1f9cc9318206cd649dc0b76be3de
+  video_player: ecd305f42e9044793efd34846e1ce64c31ea6fcb
+
+PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
+
+COCOAPODS: 1.10.0
